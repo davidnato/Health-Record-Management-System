@@ -25,11 +25,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
   @override
   Widget build(BuildContext context) {
     // List of pages corresponding to each button in the sidebar
-    final List<Widget> _pages = [
+    final List<Widget> pages = [
       const AddUserPage(), // Page for adding users
       const UsersListPage(), // Page for deleting users
       PatientsListPage(patients: _patients), // Page for viewing patient records
-      Center(child: Text("Update Records Page")), // Placeholder for Update Records page
+      const Center(child: Text("Update Records Page")), // Placeholder for Update Records page
     ];
 
     return Scaffold(
@@ -90,7 +90,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
           
           // Main content area to display the selected page
           Expanded(
-            child: _pages[_selectedIndex],
+            child: pages[_selectedIndex],
           ),
         ],
       ),

@@ -19,7 +19,7 @@ class _DoctorPageState extends State<DoctorPage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _pages = [
+    final List<Widget> pages = [
       const LabResultsPage(),
       const AppointmentsPage(),
       PatientsListPage(patients: _patients),
@@ -86,7 +86,7 @@ class _DoctorPageState extends State<DoctorPage> {
             ],
           ),
           Expanded(
-            child: _pages[_selectedIndex],
+            child: pages[_selectedIndex],
           ),
         ],
       ),
