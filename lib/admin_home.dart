@@ -24,12 +24,17 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // List of pages corresponding to each button in the sidebar
     final List<Widget> pages = [
-      const AddUserPage(), // Page for adding users
-      const UsersListPage(), // Page for deleting users
-      PatientsListPage(patients: _patients), // Page for viewing patient records
-      const Center(child: Text("Update Records Page")), // Placeholder for Update Records page
+      const AddUserPage(), // Add user page
+      const UsersListPage(), // Users list page
+      PatientsListPage(
+  patients: _patients,  // Pass the list of patients
+  onPatientSelected: (patient) {
+    // Handle the selected patient here, e.g., navigate to another page or update data
+    print('Patient selected: ${patient['Full Name']}');
+  },
+),
+// Placeholder for Update Records page
     ];
 
     return Scaffold(
@@ -39,7 +44,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              // Display a dialog with notifications when the icon is pressed
+              // Notification dialog
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -87,7 +92,6 @@ class _AdminHomePageState extends State<AdminHomePage> {
               ),
             ],
           ),
-          
           // Main content area to display the selected page
           Expanded(
             child: pages[_selectedIndex],

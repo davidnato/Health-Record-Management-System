@@ -41,8 +41,13 @@ class _ReceptionistPageState extends State<ReceptionistPage> {
         onPatientRegistered: _addPatient, // Pass the function to add patients
       ),
       PatientsListPage(
-        patients: _patients, // Pass the patients list
-      ),
+  patients: _patients,  // Pass the list of patients
+  onPatientSelected: (patient) {
+    // Handle the selected patient here, e.g., navigate to another page or update data
+    print('Patient selected: ${patient['Full Name']}');
+  },
+),
+
       const BookAppointmentPage(), // Page for booking an appointment
       const BillingPage(), // Page for billing the patient
     ];

@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 
-class PatientsListPage extends StatefulWidget {
-  const PatientsListPage({super.key, required this.patients});
 
+class PatientsListPage extends StatelessWidget {
   final List<Map<String, String>> patients;
+  final Function(Map<String, String>) onPatientSelected;
 
-  @override
-  _PatientsListPageState createState() => _PatientsListPageState();
-}
-
-class _PatientsListPageState extends State<PatientsListPage> {
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  // Constructor now requires `onPatientSelected`
+  const PatientsListPage({
+    super.key,
+    required this.patients,
+    required this.onPatientSelected, // This is the missing required parameter
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,22 +20,41 @@ class _PatientsListPageState extends State<PatientsListPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: widget.patients.isNotEmpty
-            ? ListView.builder(
-                itemCount: widget.patients.length,
-                itemBuilder: (context, index) {
-                  final patient = widget.patients[index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: ListTile(
-                      title: Text(patient['Full Name'] ?? 'No Name'),
-                      subtitle: Text(
-                        'ID: ${patient['ID'] ?? 'N/A'}\n'
-                        'DOB: ${patient['Date of Birth'] ?? 'N/A'}, Phone: ${patient['Phone Number'] ?? 'N/A'}',
-                      ),
-                    ),
-                  );
-                },
+        child: patients.isNotEmpty
+            ? SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columns: const [
+                    DataColumn(label: Text('Patient ID')),
+                    DataColumn(label: Text('Full Name')),
+                    DataColumn(label: Text('DOB')),
+                    DataColumn(label: Text('Phone')),
+                    DataColumn(label: Text('Actions')),
+                  ],
+                  rows: patients.map((patient) {
+                    return DataRow(
+                      cells: [
+                        DataCell(Text(patient['ID'] ?? 'N/A')),
+                        DataCell(Text(patient['Full Name'] ?? 'No Name')),
+                        DataCell(Text(patient['Date of Birth'] ?? 'N/A')),
+                        DataCell(Text(patient['Phone Number'] ?? 'N/A')),
+                        DataCell(
+                          Row(
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  // Use the `onPatientSelected` callback when a patient is selected
+                                  onPatientSelected(patient);
+                                },
+                                child: const Text('Update'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
               )
             : const Center(child: Text('No patients registered yet.')),
       ),

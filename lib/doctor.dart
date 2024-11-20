@@ -3,7 +3,6 @@ import 'login.dart';
 import 'lab_results.dart';
 import 'appointments.dart';
 import 'patientslist.dart';
-import 'update_patient.dart';
 import 'add_lab_results.dart';
 
 class DoctorPage extends StatefulWidget {
@@ -14,7 +13,11 @@ class DoctorPage extends StatefulWidget {
 }
 
 class _DoctorPageState extends State<DoctorPage> {
-  final List<Map<String, String>> _patients = [];
+  final List<Map<String, String>> _patients = [
+    {'ID': '001', 'Full Name': 'John Doe', 'Date of Birth': '01/01/1990', 'Phone Number': '1234567890'},
+    {'ID': '002', 'Full Name': 'Jane Smith', 'Date of Birth': '02/02/1985', 'Phone Number': '9876543210'},
+    // Add more patients as necessary
+  ];
   int _selectedIndex = 0;
 
   @override
@@ -22,8 +25,14 @@ class _DoctorPageState extends State<DoctorPage> {
     final List<Widget> pages = [
       const LabResultsPage(),
       const AppointmentsPage(),
-      PatientsListPage(patients: _patients),
-      const UpdatePatientPage(),
+      PatientsListPage(
+  patients: _patients,  // Pass the list of patients
+  onPatientSelected: (patient) {
+    // Handle the selected patient here, e.g., navigate to another page or update data
+    print('Patient selected: ${patient['Full Name']}');
+  },
+),
+
       const AddLabResultsPage(),
     ];
 
@@ -74,10 +83,6 @@ class _DoctorPageState extends State<DoctorPage> {
               NavigationRailDestination(
                 icon: Icon(Icons.person),
                 label: Text('Check Patient Details'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.edit),
-                label: Text('Update Patient Details'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.add),
