@@ -1,57 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class UsersListPage extends StatelessWidget {
   const UsersListPage({super.key});
 
-  Future<List<Map<String, String>>> _getUsers(String roleFilter) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<Map<String, String>> users = [];
+  Future<List<Map<String, dynamic>>> _getUsersFromSharedPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String>? usersJson = prefs.getStringList('users'); // Fetch the stored user list
+    if (usersJson == null) return []; // Return an empty list if no data found
 
-    // Get all keys and filter for user keys
-    Set<String> keys = prefs.getKeys();
-    for (String key in keys) {
-      if (key.startsWith('user_')) {
-        String username = key.split('_')[1]; // Extract username from the key
-        String fullName = prefs.getString('fullName_$username') ?? '';
-        String role = prefs.getString('role_$username') ?? '';
-        if (role == roleFilter) {
-          users.add({
-            'username': username,
-            'fullName': fullName,
-            'role': role,
-          });
-        }
-      }
-    }
-    return users;
+    // Decode the list of JSON strings into Dart objects
+    return usersJson.map((user) => jsonDecode(user) as Map<String, dynamic>).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Doctors List'),
+        title: const Text('Users List'),
       ),
-      body: FutureBuilder<List<Map<String, String>>>(
-        future: _getUsers('Doctor'),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _getUsersFromSharedPreferences(), // Fetch users from SharedPreferences
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No doctors found.'));
           }
 
-          List<Map<String, String>> doctors = snapshot.data!;
+          if (snapshot.data!.isEmpty) {
+            return const Center(child: Text('No users available'));
+          }
+
+          final users = snapshot.data!;
           return ListView.builder(
-            itemCount: doctors.length,
+            itemCount: users.length,
             itemBuilder: (context, index) {
-              final doctor = doctors[index];
+              final user = users[index];
               return ListTile(
-                title: Text(doctor['fullName'] ?? 'Unknown Doctor'),
-                subtitle: Text('Username: ${doctor['username']}'),
+                title: Text(user['full_name']),
+                subtitle: Text('Role: ${user['role']}'),
               );
             },
           );

@@ -64,7 +64,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                 MaterialPageRoute(
                                   builder: (context) => UpdatePatientPage(
                                     patientId: patientId,
-                                    patientName: 'Name Placeholder', // Replace with actual patient name if available
+                                    patientName: 'Name Placeholder', patientData: const {}, // Replace with actual patient name if available
                                   ),
                                 ),
                               );

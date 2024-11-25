@@ -14,13 +14,15 @@ class _AddUserPageState extends State<AddUserPage> {
   final TextEditingController _fullNameController = TextEditingController();
   String _selectedRole = 'Receptionist'; // Default role
 
-  void _addUser() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    
-    // Store user data in SharedPreferences
-    await prefs.setString('user_${_usernameController.text}', _passwordController.text);
-    await prefs.setString('fullName_${_usernameController.text}', _fullNameController.text);
-    await prefs.setString('role_${_usernameController.text}', _selectedRole);
+  // Method to save user data to SharedPreferences
+  Future<void> _addUser() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Saving user details as key-value pairs
+    await prefs.setString('username', _usernameController.text);
+    await prefs.setString('password', _passwordController.text);
+    await prefs.setString('full_name', _fullNameController.text);
+    await prefs.setString('role', _selectedRole);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('User added successfully')),

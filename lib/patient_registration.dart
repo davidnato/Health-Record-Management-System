@@ -3,12 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 class PatientRegistrationPage extends StatefulWidget {
-  final Function(Map<String, String>) onPatientRegistered;
-
-  const PatientRegistrationPage({super.key, required this.onPatientRegistered});
+  const PatientRegistrationPage({super.key});
 
   @override
-  _PatientRegistrationPageState createState() => _PatientRegistrationPageState();
+  _PatientRegistrationPageState createState() =>
+      _PatientRegistrationPageState();
 }
 
 class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
@@ -38,14 +37,13 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
 
     // Create a new patient record
     Map<String, String> newPatient = {
-      'fullName': fullName,
-      'dob': dob,
-      'phone': phone,
-      'allergies': allergies,
+      'Full Name': fullName,
+      'Date of Birth': dob,
+      'Phone Number': phone,
+      'Allergies': allergies,
     };
 
-    // Pass the new patient data to the function and save it to SharedPreferences
-    widget.onPatientRegistered(newPatient);
+    // Save the new patient to SharedPreferences
     await _savePatientToSharedPreferences(newPatient);
 
     // Show confirmation message
@@ -78,18 +76,17 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
             const SizedBox(height: 10),
             TextField(
               controller: _dobController,
-              decoration: const InputDecoration(labelText: 'Date of Birth (YYYY-MM-DD)'),
+              decoration: const InputDecoration(labelText: 'Date of Birth'),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: _phoneController,
               decoration: const InputDecoration(labelText: 'Phone Number'),
-              keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 10),
             TextField(
               controller: _allergiesController,
-              decoration: const InputDecoration(labelText: 'Allergies (if any)'),
+              decoration: const InputDecoration(labelText: 'Allergies (Optional)'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(

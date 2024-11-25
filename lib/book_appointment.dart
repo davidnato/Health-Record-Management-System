@@ -1,122 +1,129 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'appointments.dart'; // Import AppointmentsPage
 
 class BookAppointmentPage extends StatefulWidget {
-  final String? patientId;
-  final String? patientName;
+  final Map<String, String> patient;
 
-  const BookAppointmentPage({super.key, this.patientId, this.patientName});
+  const BookAppointmentPage({super.key, required this.patient});
 
   @override
   _BookAppointmentPageState createState() => _BookAppointmentPageState();
 }
 
 class _BookAppointmentPageState extends State<BookAppointmentPage> {
-  final TextEditingController _appointmentDateController = TextEditingController();
-  String? _selectedDoctor; // Stores the selected doctor username
-  List<Map<String, String>> _doctors = []; // List of doctors
+  final _formKey = GlobalKey<FormState>();
+  late String _doctorName;
+  late String _appointmentDate;
 
   @override
   void initState() {
     super.initState();
-    _loadDoctors();
+    _doctorName = '';
+    _appointmentDate = '';
   }
 
-  Future<void> _loadDoctors() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    Set<String> keys = prefs.getKeys();
-    List<Map<String, String>> doctors = [];
+  Future<void> _saveAppointment(String patientId, String doctorName, String date) async {
+    final prefs = await SharedPreferences.getInstance();
+    final appointmentDetails = '$patientId|$date|$doctorName'; // Format as "ID|Date|Doctor"
+    
+    // Get the current list of appointments
+    final List<String> appointments = prefs.getStringList('appointments') ?? [];
 
-    for (String key in keys) {
-      if (key.startsWith('user_')) {
-        String username = key.split('_')[1];
-        String fullName = prefs.getString('fullName_$username') ?? '';
-        String role = prefs.getString('role_$username') ?? '';
-        if (role == 'Doctor') {
-          doctors.add({'username': username, 'fullName': fullName});
-        }
-      }
-    }
+    // Add the new appointment to the list
+    appointments.add(appointmentDetails);
 
-    setState(() {
-      _doctors = doctors;
-    });
-  }
-
-  Future<void> _bookAppointment() async {
-    if (widget.patientId != null &&
-        _appointmentDateController.text.isNotEmpty &&
-        _selectedDoctor != null) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      List<String> appointments = prefs.getStringList('appointments') ?? [];
-
-      String appointment =
-          '${widget.patientId}|${_appointmentDateController.text}|$_selectedDoctor';
-      appointments.add(appointment);
-      await prefs.setStringList('appointments', appointments);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Appointment booked successfully.')),
-      );
-
-      // Clear fields
-      _appointmentDateController.clear();
-      setState(() {
-        _selectedDoctor = null;
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields.')),
-      );
-    }
+    // Save the updated list back to SharedPreferences
+    await prefs.setStringList('appointments', appointments);
   }
 
   @override
   Widget build(BuildContext context) {
+    final fullName = widget.patient['Full Name'] ?? 'Unknown Patient';
+    final patientId = widget.patient['ID'] ?? 'Unknown ID';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Book Appointment'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextFormField(
-              initialValue: widget.patientName,
-              readOnly: true,
-              decoration: const InputDecoration(labelText: 'Patient Name'),
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              initialValue: widget.patientId,
-              readOnly: true,
-              decoration: const InputDecoration(labelText: 'Patient ID'),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _appointmentDateController,
-              decoration:
-                  const InputDecoration(labelText: 'Appointment Date (YYYY-MM-DD)'),
-            ),
-            const SizedBox(height: 10),
-            DropdownButtonFormField<String>(
-              value: _selectedDoctor,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Assign Doctor'),
-              items: _doctors.map((doctor) {
-                return DropdownMenuItem(
-                  value: doctor['username'],
-                  child: Text(doctor['fullName']!),
-                );
-              }).toList(),
-              onChanged: (value) => setState(() => _selectedDoctor = value),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _bookAppointment,
-              child: const Text('Book Appointment'),
-            ),
-          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Booking appointment for $fullName (ID: $patientId)',
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+
+              // Doctor's Name field
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Doctor\'s Name',
+                  hintText: 'Enter the doctor\'s name',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the doctor\'s name';
+                  }
+                  return null;
+                },
+                onSaved: (value) {
+                  _doctorName = value!;
+                },
+              ),
+              const SizedBox(height: 20),
+
+              // Appointment Date field
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Appointment Date',
+                  hintText: 'Select date',
+                ),
+                onTap: () async {
+                  final DateTime? selectedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2101),
+                  );
+                  if (selectedDate != null) {
+                    setState(() {
+                      _appointmentDate = selectedDate.toLocal().toString().split(' ')[0]; // Formatting the date
+                    });
+                  }
+                },
+                readOnly: true,
+                controller: TextEditingController(text: _appointmentDate),
+              ),
+              const SizedBox(height: 20),
+
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+
+                    // Save the appointment details
+                    _saveAppointment(patientId, _doctorName, _appointmentDate);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Appointment Booked Successfully')),
+                    );
+
+                    // Navigate to AppointmentsPage
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AppointmentsPage()),
+                    );
+                  }
+                },
+                child: const Text('Book Appointment'),
+              ),
+            ],
+          ),
         ),
       ),
     );

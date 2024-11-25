@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'patientslist.dart'; // Import patients list page
-import 'book_appointment.dart'; // Import the book appointment page
-import 'billing.dart'; // Import the billing page
-import 'login.dart'; // Import your login page
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'patientslist.dart';
+import 'book_appointment.dart';
+import 'billing.dart';
+import 'login.dart';
 
 class ReceptionistPage extends StatefulWidget {
   const ReceptionistPage({super.key});
@@ -14,42 +14,60 @@ class ReceptionistPage extends StatefulWidget {
 }
 
 class _ReceptionistPageState extends State<ReceptionistPage> {
-  final List<Map<String, String>> _patients = []; // List to store registered patients
-  int _selectedIndex = 0; // To track the selected page index
+  final List<Map<String, String>> _patients = [];
+  int _selectedIndex = 0;
 
-  void _addPatient(Map<String, String> patient) {
-    setState(() {
-      // Generate a unique ID based on the current time in milliseconds
-      final String uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
-      patient['ID'] = uniqueId;  // Add unique ID to the patient data
-      _patients.add(patient); // Add patient to the list
-    });
-    _savePatientsToSharedPreferences(); // Save the updated patients list to SharedPreferences
+  @override
+  void initState() {
+    super.initState();
+    _loadPatientsFromSharedPreferences(); // Load patients when the app starts
   }
 
-  Future<void> _savePatientsToSharedPreferences() async {
+  // Save patient to SharedPreferences
+  Future<void> _addPatient(Map<String, String> patient) async {
     final prefs = await SharedPreferences.getInstance();
-    final patientsJsonList = _patients.map((patient) => jsonEncode(patient)).toList();
-    await prefs.setStringList('patients', patientsJsonList);
+    final String uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
+    patient['id'] = uniqueId; // Add unique ID
+    setState(() {
+      _patients.add(patient); // Add to local list
+    });
+
+    // Save the updated patient list to SharedPreferences
+    List<String> patientsJson =
+        _patients.map((patient) => jsonEncode(patient)).toList();
+    await prefs.setStringList('patients', patientsJson);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Patient added successfully')),
+    );
+  }
+
+  // Load patients from SharedPreferences
+  Future<void> _loadPatientsFromSharedPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String>? patientsJson = prefs.getStringList('patients');
+    if (patientsJson != null) {
+      setState(() {
+        _patients.clear();
+        _patients.addAll(
+          patientsJson.map((jsonString) => Map<String, String>.from(jsonDecode(jsonString))),
+        );
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // List of pages corresponding to each button in the sidebar, passing required parameters
     final List<Widget> pages = [
-      PatientRegistrationPage(
-        onPatientRegistered: _addPatient, // Pass the function to add patients
-      ),
+      PatientRegistrationPage(onPatientRegistered: _addPatient),
       PatientsListPage(
-  patients: _patients,  // Pass the list of patients
-  onPatientSelected: (patient) {
-    // Handle the selected patient here, e.g., navigate to another page or update data
-    print('Patient selected: ${patient['Full Name']}');
-  },
-),
-
-      const BookAppointmentPage(), // Page for booking an appointment
-      const BillingPage(), // Page for billing the patient
+        patients: _patients,
+        onPatientSelected: (patient) {
+          print('Patient selected: ${patient['full_name']}');
+        },
+      ),
+      const BookAppointmentPage(patient: {}),
+      const BillingPage(),
     ];
 
     return Scaffold(
@@ -59,7 +77,6 @@ class _ReceptionistPageState extends State<ReceptionistPage> {
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              // Display a dialog with notifications when the icon is pressed
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -79,7 +96,6 @@ class _ReceptionistPageState extends State<ReceptionistPage> {
       ),
       body: Row(
         children: [
-          // Sidebar navigation
           NavigationRail(
             selectedIndex: _selectedIndex,
             onDestinationSelected: (int index) {
@@ -107,8 +123,6 @@ class _ReceptionistPageState extends State<ReceptionistPage> {
               ),
             ],
           ),
-
-          // Main content area to display the selected page
           Expanded(
             child: pages[_selectedIndex],
           ),
@@ -118,7 +132,6 @@ class _ReceptionistPageState extends State<ReceptionistPage> {
         padding: const EdgeInsets.all(10.0),
         child: ElevatedButton(
           onPressed: () {
-            // Navigate back to the login page
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -158,39 +171,39 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Full Name'),
                 validator: (value) => value!.isEmpty ? 'Please enter full name' : null,
-                onSaved: (value) => _patientData['Full Name'] = value!,
+                onSaved: (value) => _patientData['full_name'] = value!,
               ),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Date of Birth'),
                 validator: (value) => value!.isEmpty ? 'Please enter date of birth' : null,
-                onSaved: (value) => _patientData['Date of Birth'] = value!,
+                onSaved: (value) => _patientData['date_of_birth'] = value!,
               ),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Gender'),
                 validator: (value) => value!.isEmpty ? 'Please enter gender' : null,
-                onSaved: (value) => _patientData['Gender'] = value!,
+                onSaved: (value) => _patientData['gender'] = value!,
               ),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Phone Number'),
                 validator: (value) => value!.isEmpty ? 'Please enter phone number' : null,
-                onSaved: (value) => _patientData['Phone Number'] = value!,
+                onSaved: (value) => _patientData['phone_number'] = value!,
               ),
               const SizedBox(height: 16),
               const Text('Identification', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'National ID or Passport'),
                 validator: (value) => value!.isEmpty ? 'Please enter ID or Passport number' : null,
-                onSaved: (value) => _patientData['National ID/Passport'] = value!,
+                onSaved: (value) => _patientData['national_id_or_passport'] = value!,
               ),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Insurance Provider'),
                 validator: (value) => value!.isEmpty ? 'Please enter insurance provider' : null,
-                onSaved: (value) => _patientData['Insurance Provider'] = value!,
+                onSaved: (value) => _patientData['insurance_provider'] = value!,
               ),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Policy Number'),
                 validator: (value) => value!.isEmpty ? 'Please enter policy number' : null,
-                onSaved: (value) => _patientData['Policy Number'] = value!,
+                onSaved: (value) => _patientData['policy_number'] = value!,
               ),
               const SizedBox(height: 16),
               ElevatedButton(
