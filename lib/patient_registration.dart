@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'patientslist.dart';
 
 class PatientRegistrationPage extends StatefulWidget {
   const PatientRegistrationPage({super.key});
@@ -22,25 +23,27 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
 
     // Retrieve the current list of patients from SharedPreferences
     List<String> patientsJsonList = prefs.getStringList('patients') ?? [];
-    patientsJsonList.add(jsonEncode(newPatient)); // Add the new patient as a JSON string
+
+    // Add the new patient as a JSON string
+    patientsJsonList.add(jsonEncode(newPatient));
 
     // Save the updated list back to SharedPreferences
     await prefs.setStringList('patients', patientsJsonList);
   }
 
+  // Register new patient
   void _registerPatient() async {
-    // Collecting data from the input fields
     String fullName = _fullNameController.text;
     String dob = _dobController.text;
     String phone = _phoneController.text;
     String allergies = _allergiesController.text;
 
-    // Create a new patient record
     Map<String, String> newPatient = {
       'Full Name': fullName,
       'Date of Birth': dob,
       'Phone Number': phone,
       'Allergies': allergies,
+      'ID': DateTime.now().millisecondsSinceEpoch.toString(), // Generate a unique ID for the patient
     };
 
     // Save the new patient to SharedPreferences
@@ -56,6 +59,14 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
     _dobController.clear();
     _phoneController.clear();
     _allergiesController.clear();
+
+    // Navigate to the Patients List page after registration
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PatientsListPage(patients: [], onPatientSelected: (patient) {}),
+      ),
+    );
   }
 
   @override

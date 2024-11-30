@@ -1,23 +1,23 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
 class LabResultsStorage {
-  static const String _keyLabResults = 'lab_results';
+  // This is a simple example. You can replace it with a database or more persistent storage.
+  static final List<String> _labResults = [];
 
-  // Method to save lab results
+  // Save lab result (simulated storage)
   static Future<void> saveLabResult(String patientId, String result) async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> labResults = prefs.getStringList(_keyLabResults) ?? [];
-    
-    // Format: patientId|result
-    labResults.add('$patientId|$result');
-    
-    // Save the updated list back to SharedPreferences
-    await prefs.setStringList(_keyLabResults, labResults);
+    try {
+      // Simulating saving a lab result (e.g., you could add it to a database or shared preferences)
+      _labResults.add('$patientId|$result');
+      print('Lab result saved for patient $patientId: $result');
+    } catch (e) {
+      throw Exception('Failed to save lab result: $e');
+    }
   }
 
-  // Method to retrieve lab results
+  // Get all lab results (simulated retrieval)
   static Future<List<String>> getLabResults() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_keyLabResults) ?? [];
+    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay or database query
+    return _labResults; // Return the saved lab results
   }
 }

@@ -19,9 +19,13 @@ class _LabResultsPageState extends State<LabResultsPage> {
 
   Future<void> _loadLabResults() async {
     final results = await LabResultsStorage.getLabResults();
-    setState(() {
-      _labResults = results;
-    });
+
+    // Check if the widget is still mounted before calling setState
+    if (mounted) {
+      setState(() {
+        _labResults = results;
+      });
+    }
   }
 
   @override
@@ -37,7 +41,7 @@ class _LabResultsPageState extends State<LabResultsPage> {
                 itemCount: _labResults.length,
                 itemBuilder: (context, index) {
                   final labResult = _labResults[index].split('|');
-                  
+
                   // Check if labResult has the expected number of elements
                   if (labResult.length < 2) {
                     return const Card(
@@ -62,4 +66,11 @@ class _LabResultsPageState extends State<LabResultsPage> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    // Always clean up resources if needed
+    super.dispose();
+  }
 }
+

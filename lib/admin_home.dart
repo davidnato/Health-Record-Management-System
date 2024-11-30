@@ -28,13 +28,15 @@ class _AdminHomePageState extends State<AdminHomePage> {
       const AddUserPage(), // Add user page
       const UsersListPage(), // Users list page
       PatientsListPage(
-  patients: _patients,  // Pass the list of patients
-  onPatientSelected: (patient) {
-    // Handle the selected patient here, e.g., navigate to another page or update data
-    print('Patient selected: ${patient['Full Name']}');
-  },
-),
-// Placeholder for Update Records page
+        patients: _patients, // Pass the list of patients
+        onPatientSelected: (patient) {
+          // Handle the selected patient here
+          print('Patient selected: ${patient['Full Name']}');
+        },
+      ),
+      const Center(
+        child: Text('Update Records Page'), // Placeholder for Update Records page
+      ),
     ];
 
     return Scaffold(

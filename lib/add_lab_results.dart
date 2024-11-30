@@ -11,16 +11,31 @@ class AddLabResultsPage extends StatefulWidget {
 class _AddLabResultsPageState extends State<AddLabResultsPage> {
   final TextEditingController _patientIdController = TextEditingController();
   final TextEditingController _resultController = TextEditingController();
+  bool _isSaving = false; // To manage the loading state
 
   void _saveLabResult() async {
     String patientId = _patientIdController.text;
     String result = _resultController.text;
 
     if (patientId.isNotEmpty && result.isNotEmpty) {
-      await LabResultsStorage.saveLabResult(patientId, result);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lab result saved for patient $patientId')),
-      );
+      setState(() {
+        _isSaving = true; // Show loading indicator
+      });
+
+      try {
+        await LabResultsStorage.saveLabResult(patientId, result);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lab result saved for patient $patientId')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to save lab result.')),
+        );
+      } finally {
+        setState(() {
+          _isSaving = false; // Hide loading indicator
+        });
+      }
 
       // Clear input fields
       _patientIdController.clear();
@@ -53,8 +68,10 @@ class _AddLabResultsPageState extends State<AddLabResultsPage> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _saveLabResult,
-              child: const Text('Save Lab Result'),
+              onPressed: _isSaving ? null : _saveLabResult, // Disable button when saving
+              child: _isSaving
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Save Lab Result'),
             ),
           ],
         ),
