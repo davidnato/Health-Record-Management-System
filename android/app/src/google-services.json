@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "180448223018",
+    "project_id": "hospital-record-manageme-e22d1",
+    "storage_bucket": "hospital-record-manageme-e22d1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:180448223018:android:3ba7892b10f3696938c853",
+        "android_client_info": {
+          "package_name": "com.example.hrms"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDi-emtuEFuQHx6MWTmGAzv94Xn-9Kyh5U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

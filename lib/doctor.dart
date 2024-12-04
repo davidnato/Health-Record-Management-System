@@ -1,110 +1,75 @@
 import 'package:flutter/material.dart';
-import 'login.dart';
-import 'lab_results.dart';
-import 'appointments.dart';
-import 'patientslist.dart';
-import 'add_lab_results.dart';
+import 'package:hrms/appointments_page.dart';
+import 'package:hrms/prescriptions_page.dart';
+import 'package:hrms/lab_results_page.dart';
+import 'package:hrms/auth_screen.dart';
+import 'package:hrms/view_patient_records.dart'; // For logout redirection
 
-class DoctorPage extends StatefulWidget {
+class DoctorPage extends StatelessWidget {
   const DoctorPage({super.key});
 
   @override
-  State<DoctorPage> createState() => _DoctorPageState();
-}
-
-class _DoctorPageState extends State<DoctorPage> {
-  final List<Map<String, String>> _patients = [
-    {'ID': '001', 'Full Name': 'John Doe', 'Date of Birth': '01/01/1990', 'Phone Number': '1234567890'},
-    {'ID': '002', 'Full Name': 'Jane Smith', 'Date of Birth': '02/02/1985', 'Phone Number': '9876543210'},
-    // Add more patients as necessary
-  ];
-  int _selectedIndex = 0;
-
-  @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = [
-      const LabResultsPage(),
-      const AppointmentsPage(),
-      PatientsListPage(
-  patients: _patients,  // Pass the list of patients
-  onPatientSelected: (patient) {
-    // Handle the selected patient here, e.g., navigate to another page or update data
-    print('Patient selected: ${patient['Full Name']}');
-  },
-),
-
-      const AddLabResultsPage(),
-    ];
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Doctor Home'),
+        title: const Text("Doctor Dashboard"),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications),
+            icon: const Icon(Icons.logout),
             onPressed: () {
-              // Handle notification icon press
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Notifications'),
-                  content: const Text('You have new notifications.'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Close'),
-                    ),
-                  ],
-                ),
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const AuthScreen()),
               );
             },
           ),
         ],
       ),
-      body: Row(
-        children: [
-          NavigationRail(
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: (int index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-            labelType: NavigationRailLabelType.all,
-            destinations: const [
-              NavigationRailDestination(
-                icon: Icon(Icons.science),
-                label: Text('Check Lab Results'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.calendar_today),
-                label: Text('Check Appointments'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.person),
-                label: Text('Check Patient Details'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.add),
-                label: Text('Add Lab Results'),
-              ),
-            ],
-          ),
-          Expanded(
-            child: pages[_selectedIndex],
-          ),
-        ],
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
-            );
-          },
-          child: const Text('Logout'),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AppointmentsPage()),
+                );
+              },
+              child: const Text("View Appointments"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ViewPatientRecordsPage()),
+              );
+              },
+              child: const Text("View Patients"),
+            ),
+
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PrescriptionsPage()),
+                );
+              },
+              child: const Text("Manage Prescriptions"),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LabResultsPage()),
+                );
+              },
+              child: const Text("Review Lab Results"),
+            ),
+          ],
         ),
       ),
     );
