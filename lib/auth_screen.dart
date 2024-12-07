@@ -34,7 +34,6 @@ class _AuthScreenState extends State<AuthScreen> {
       if (_isLogin) {
         user = await _authService.login(email, password);
         if (user != null) {
-          // Fetch the role from Firestore
           role = await _authService.getUserRole();
         }
       } else {
@@ -87,37 +86,72 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_isLogin ? "Login" : "Register")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: "Email"),
+      body: Row(
+        children: [
+          // Left side (Blue color)
+          Expanded(
+            flex: 1,
+            child: Container(
+              color: Colors.blue, // Blue color on the left side
             ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: "Password"),
-              obscureText: true,
+          ),
+          // Right side (Login form)
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
+                      labelText: "Email",
+                      prefixIcon: Icon(Icons.email),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: true,  // Correct way to use obscureText
+                    decoration: const InputDecoration(
+                      labelText: "Password",
+                      prefixIcon: Icon(Icons.lock),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _authenticate,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(_isLogin ? "Login" : "Register"),
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _isLogin = !_isLogin;
+                      });
+                    },
+                    child: Text(
+                      _isLogin
+                          ? "Don't have an account? Register"
+                          : "Already have an account? Login",
+                      style: const TextStyle(color: Colors.blueAccent),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _authenticate,
-              child: Text(_isLogin ? "Login" : "Register"),
-            ),
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  _isLogin = !_isLogin;
-                });
-              },
-              child: Text(_isLogin
-                  ? "Don't have an account? Register"
-                  : "Already have an account? Login"),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

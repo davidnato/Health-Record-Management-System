@@ -10,46 +10,73 @@ class ReceptionistPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Receptionist Dashboard")),
+      appBar: AppBar(
+        title: const Text("Receptionist Dashboard"),
+        backgroundColor: Colors.teal, // A modern teal color
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
+            // Title Section
+            const Text(
+              "Welcome, Receptionist",
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.teal,
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              "Manage patient appointments, billing, and more.",
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 40),
+
+            // Action Buttons Section
+            _buildActionButton(
+              context,
+              label: "Patient Management",
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const PatientManagementPage()),
                 );
               },
-              child: const Text("Patient Management"),
+              color: Colors.teal,
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
+            _buildActionButton(
+              context,
+              label: "Appointment Management",
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AppointmentPage()),
                 );
               },
-              child: const Text("Appointment Management"),
+              color: Colors.orange,
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
+            _buildActionButton(
+              context,
+              label: "Billing Management",
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const BillingPage()),
                 );
               },
-              child: const Text("Billing Management"),
+              color: Colors.blue,
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red, // Red button for logout
-              ),
+            const SizedBox(height: 40),
+
+            // Logout Button
+            _buildActionButton(
+              context,
+              label: "Logout",
               onPressed: () {
                 Navigator.pushAndRemoveUntil(
                   context,
@@ -57,10 +84,29 @@ class ReceptionistPage extends StatelessWidget {
                   (route) => false, // Remove all previous routes
                 );
               },
-              child: const Text("Logout"),
+              color: Colors.red,
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Helper method to create styled buttons
+  Widget _buildActionButton(BuildContext context, {required String label, required VoidCallback onPressed, required Color color}) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        elevation: 5, // Adding a slight shadow effect
+      ),
+      onPressed: onPressed,
+      child: Text(
+        label,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
     );
   }

@@ -10,6 +10,7 @@ class RegisterPatientPage extends StatefulWidget {
 }
 
 class _RegisterPatientPageState extends State<RegisterPatientPage> {
+  final _formKey = GlobalKey<FormState>(); // Form validation key
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
@@ -32,39 +33,41 @@ class _RegisterPatientPageState extends State<RegisterPatientPage> {
 
   // Function to register the patient
   void _registerPatient() async {
-    try {
-      // Collect patient data
-      final patientData = {
-        'fullName': _fullNameController.text.trim(),
-        'phone': _phoneController.text.trim(),
-        'dob': Timestamp.fromDate(_dob!), // Store the date as Firestore Timestamp
-        'email': _emailController.text.trim(),
-        'gender': _gender,
-        'address': _addressController.text.trim(),
-        'emergencyContactName': _emergencyNameController.text.trim(),
-        'emergencyContactPhone': _emergencyPhoneController.text.trim(),
-        'insuranceCompany': _insuranceCompanyController.text.trim(),
-        'insurancePolicy': _insurancePolicyController.text.trim(),
-        'medicalHistory': _medicalHistoryController.text.trim(),
-      };
+    if (_formKey.currentState?.validate() ?? false) {
+      try {
+        // Collect patient data
+        final patientData = {
+          'fullName': _fullNameController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'dob': Timestamp.fromDate(_dob!), // Store the date as Firestore Timestamp
+          'email': _emailController.text.trim(),
+          'gender': _gender,
+          'address': _addressController.text.trim(),
+          'emergencyContactName': _emergencyNameController.text.trim(),
+          'emergencyContactPhone': _emergencyPhoneController.text.trim(),
+          'insuranceCompany': _insuranceCompanyController.text.trim(),
+          'insurancePolicy': _insurancePolicyController.text.trim(),
+          'medicalHistory': _medicalHistoryController.text.trim(),
+        };
 
-      // Add to Firestore
-      await _firestore.collection('patients').add(patientData);
+        // Add to Firestore
+        await _firestore.collection('patients').add(patientData);
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Patient Registered Successfully!"),
-        backgroundColor: Colors.green,
-      ));
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Patient Registered Successfully!"),
+          backgroundColor: Colors.green,
+        ));
 
-      // Clear form fields
-      _clearForm();
-    } catch (e) {
-      // Handle errors
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Error: $e"),
-        backgroundColor: Colors.red,
-      ));
+        // Clear form fields
+        _clearForm();
+      } catch (e) {
+        // Handle errors
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Error: $e"),
+          backgroundColor: Colors.red,
+        ));
+      }
     }
   }
 
@@ -110,91 +113,131 @@ class _RegisterPatientPageState extends State<RegisterPatientPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Full Name Input Field
-              TextField(
-                controller: _fullNameController,
-                decoration: const InputDecoration(labelText: "Full Name"),
-              ),
-              // Phone Input Field
-              TextField(
-                controller: _phoneController,
-                decoration: const InputDecoration(labelText: "Phone"),
-                keyboardType: TextInputType.phone,
-              ),
-              // Date of Birth (using DatePicker widget)
-              TextField(
-                controller: _dobController,
-                decoration: InputDecoration(
-                  labelText: "Date of Birth",
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.calendar_today),
-                    onPressed: () => _selectDate(context),
-                  ),
+          child: Form(
+            key: _formKey, // Assign formKey to enable validation
+            child: Column(
+              children: [
+                // Full Name Input Field
+                TextFormField(
+                  controller: _fullNameController,
+                  decoration: const InputDecoration(labelText: "Full Name"),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the patient\'s full name';
+                    }
+                    return null;
+                  },
                 ),
-                readOnly: true, // Make the text field non-editable
-              ),
-              // Email Input Field
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: "Email"),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              // Gender Dropdown
-              DropdownButton<String>(
-                value: _gender,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _gender = newValue!;
-                  });
-                },
-                items: <String>['Male', 'Female', 'Other']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
-              // Address Input Field
-              TextField(
-                controller: _addressController,
-                decoration: const InputDecoration(labelText: "Address"),
-              ),
-              // Emergency Contact Name Input Field
-              TextField(
-                controller: _emergencyNameController,
-                decoration: const InputDecoration(labelText: "Emergency Contact Name"),
-              ),
-              // Emergency Contact Phone Input Field
-              TextField(
-                controller: _emergencyPhoneController,
-                decoration: const InputDecoration(labelText: "Emergency Contact Phone"),
-                keyboardType: TextInputType.phone,
-              ),
-              // Insurance Company Input Field
-              TextField(
-                controller: _insuranceCompanyController,
-                decoration: const InputDecoration(labelText: "Insurance Company"),
-              ),
-              // Insurance Policy Number Input Field
-              TextField(
-                controller: _insurancePolicyController,
-                decoration: const InputDecoration(labelText: "Insurance Policy Number"),
-              ),
-              // Medical History Input Field
-              TextField(
-                controller: _medicalHistoryController,
-                decoration: const InputDecoration(labelText: "Medical History"),
-              ),
-              const SizedBox(height: 20),
-              // Register Button
-              ElevatedButton(
-                onPressed: _registerPatient,
-                child: const Text("Register Patient"),
-              ),
-            ],
+                // Phone Input Field
+                TextFormField(
+                  controller: _phoneController,
+                  decoration: const InputDecoration(labelText: "Phone"),
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the phone number';
+                    }
+                    return null;
+                  },
+                ),
+                // Date of Birth (using DatePicker widget)
+                TextFormField(
+                  controller: _dobController,
+                  decoration: InputDecoration(
+                    labelText: "Date of Birth",
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_today),
+                      onPressed: () => _selectDate(context),
+                    ),
+                  ),
+                  readOnly: true, // Make the text field non-editable
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please select the date of birth';
+                    }
+                    return null;
+                  },
+                ),
+                // Email Input Field
+                TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(labelText: "Email"),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the email address';
+                    }
+                    return null;
+                  },
+                ),
+                // Gender Dropdown
+                DropdownButtonFormField<String>(
+                  value: _gender,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _gender = newValue!;
+                    });
+                  },
+                  items: <String>['Male', 'Female', 'Other']
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  decoration: const InputDecoration(labelText: "Gender"),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please select a gender';
+                    }
+                    return null;
+                  },
+                ),
+                // Address Input Field
+                TextFormField(
+                  controller: _addressController,
+                  decoration: const InputDecoration(labelText: "Address"),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the address';
+                    }
+                    return null;
+                  },
+                ),
+                // Emergency Contact Name Input Field
+                TextFormField(
+                  controller: _emergencyNameController,
+                  decoration: const InputDecoration(labelText: "Emergency Contact Name"),
+                ),
+                // Emergency Contact Phone Input Field
+                TextFormField(
+                  controller: _emergencyPhoneController,
+                  decoration: const InputDecoration(labelText: "Emergency Contact Phone"),
+                  keyboardType: TextInputType.phone,
+                ),
+                // Insurance Company Input Field
+                TextFormField(
+                  controller: _insuranceCompanyController,
+                  decoration: const InputDecoration(labelText: "Insurance Company"),
+                ),
+                // Insurance Policy Number Input Field
+                TextFormField(
+                  controller: _insurancePolicyController,
+                  decoration: const InputDecoration(labelText: "Insurance Policy Number"),
+                ),
+                // Medical History Input Field
+                TextFormField(
+                  controller: _medicalHistoryController,
+                  decoration: const InputDecoration(labelText: "Medical History"),
+                ),
+                const SizedBox(height: 20),
+                // Register Button
+                ElevatedButton(
+                  onPressed: _registerPatient,
+                  child: const Text("Register Patient"),
+                ),
+              ],
+            ),
           ),
         ),
       ),

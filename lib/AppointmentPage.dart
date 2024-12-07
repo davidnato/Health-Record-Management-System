@@ -12,43 +12,23 @@ class _AppointmentPageState extends State<AppointmentPage> {
   final _patientSearchController = TextEditingController();
   final _appointmentDateController = TextEditingController();
   final _reasonController = TextEditingController();
-  String? _selectedDoctor;
-  List<String> _availableDoctors = [];
-  Map<String, String> _patients = {}; // Mock data structure for patient search.
+  final _doctorNameController = TextEditingController();
+  Map<String, String> _patients = {}; // Patient search results
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchDoctors();
-  }
-
-  // Fetch available doctors from Firestore
-  Future<void> _fetchDoctors() async {
-    try {
-      final querySnapshot = await FirebaseFirestore.instance.collection('doctors').get();
-      setState(() {
-        _availableDoctors = querySnapshot.docs.map((doc) => doc.data()['name'] as String).toList();
-      });
-    } catch (e) {
-      print("Error fetching doctors: $e");
-    }
-  }
-
-  // Fetch patients (mock search implementation; replace with actual database logic)
+  // Search patients in Firestore
   Future<void> _searchPatient(String query) async {
     try {
-      // Replace this mock data with Firestore patient query logic
-      final mockPatients = {
-        'John Doe': '123456',
-        'Jane Smith': '789012',
-      };
-      
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('patients')
+          .where('fullName', isGreaterThanOrEqualTo: query)
+          .where('fullName', isLessThanOrEqualTo: '$query\uf8ff')
+          .get();
+
       setState(() {
-        _patients = Map.fromEntries(
-          mockPatients.entries.where((entry) =>
-            entry.key.toLowerCase().contains(query.toLowerCase())
-          ),
-        );
+        _patients = {
+          for (var doc in querySnapshot.docs)
+            doc['fullName']: doc.id
+        };
       });
     } catch (e) {
       print("Error searching patients: $e");
@@ -100,21 +80,10 @@ class _AppointmentPageState extends State<AppointmentPage> {
 
               const SizedBox(height: 20),
 
-              // Select available doctor
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: "Select Doctor"),
-                value: _selectedDoctor,
-                items: _availableDoctors.map((doctor) {
-                  return DropdownMenuItem(
-                    value: doctor,
-                    child: Text(doctor),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedDoctor = value;
-                  });
-                },
+              // Doctor name input
+              TextField(
+                controller: _doctorNameController,
+                decoration: const InputDecoration(labelText: "Doctor Name"),
               ),
 
               const SizedBox(height: 20),
@@ -149,6 +118,8 @@ class _AppointmentPageState extends State<AppointmentPage> {
                 },
               ),
               const SizedBox(height: 20),
+
+              // Reason for visit
               TextField(
                 controller: _reasonController,
                 decoration: const InputDecoration(labelText: "Reason for Visit"),
@@ -168,14 +139,14 @@ class _AppointmentPageState extends State<AppointmentPage> {
     );
   }
 
-  // Function to book an appointment
+  // Book an appointment
   Future<void> _bookAppointment() async {
     final patient = _patientSearchController.text;
     final date = _appointmentDateController.text;
-    final doctor = _selectedDoctor;
+    final doctor = _doctorNameController.text;
     final reason = _reasonController.text;
 
-    if (patient.isEmpty || date.isEmpty || doctor == null || reason.isEmpty) {
+    if (patient.isEmpty || date.isEmpty || doctor.isEmpty || reason.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("All fields are required!")),
       );
@@ -183,17 +154,19 @@ class _AppointmentPageState extends State<AppointmentPage> {
     }
 
     try {
-      await FirebaseFirestore.instance.collection('appointments').add({
+      // Save appointment data to Firestore
+      final docRef = await FirebaseFirestore.instance.collection('appointments').add({
         'patient': patient,
         'doctor': doctor,
         'date': date,
         'reason': reason,
       });
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Appointment booked successfully!")),
       );
 
-      // Clear fields after booking
+      // Clear form fields
       _clearForm();
     } catch (e) {
       print("Error booking appointment: $e");
@@ -208,21 +181,6 @@ class _AppointmentPageState extends State<AppointmentPage> {
     _patientSearchController.clear();
     _appointmentDateController.clear();
     _reasonController.clear();
-    setState(() {
-      _selectedDoctor = null;
-    });
-  }
-}
-
-extension AppointmentMapExtension<K, V> on Map<K, V> {
-  /// Filters appointments based on a condition.
-  Map<K, V> filter(bool Function(K key, V value) test) {
-    final Map<K, V> filtered = {};
-    forEach((key, value) {
-      if (test(key, value)) {
-        filtered[key] = value;
-      }
-    });
-    return filtered;
+    _doctorNameController.clear();
   }
 }

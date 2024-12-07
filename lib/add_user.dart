@@ -54,66 +54,114 @@ class _AddUserPageState extends State<AddUserPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Add User")),
+      appBar: AppBar(
+        title: const Text("Add User"),
+        backgroundColor: Colors.blueAccent, // Elegant and soothing color
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _usernameController,
-                decoration: const InputDecoration(labelText: "Username"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a username';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(labelText: "Password"),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a password';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _fullNameController,
-                decoration: const InputDecoration(labelText: "Full Name"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a full name';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: "Email"),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an email';
-                  } else if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value)) {
-                    return 'Please enter a valid email';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: addUser,
-                child: const Text("Add User"),
-              ),
-            ],
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Username Input Field
+                _buildInputField(
+                  controller: _usernameController,
+                  label: "Username",
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a username';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                // Password Input Field
+                _buildInputField(
+                  controller: _passwordController,
+                  label: "Password",
+                  obscureText: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a password';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                // Full Name Input Field
+                _buildInputField(
+                  controller: _fullNameController,
+                  label: "Full Name",
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a full name';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                // Email Input Field
+                _buildInputField(
+                  controller: _emailController,
+                  label: "Email",
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter an email';
+                    } else if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value)) {
+                      return 'Please enter a valid email';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 30),
+                // Add User Button
+                ElevatedButton(
+                  onPressed: addUser,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent, // Button color
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  child: const Text("Add User"),
+                ),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  // Reusable function to build input fields with styling and validation
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.blueAccent, width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+        ),
+      ),
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      validator: validator,
+      style: const TextStyle(fontSize: 16),
     );
   }
 }
