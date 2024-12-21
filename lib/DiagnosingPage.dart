@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'addLabResults.dart'; // Ensure this matches your file structure
 
 class DiagnosingPage extends StatefulWidget {
   const DiagnosingPage({super.key});
@@ -12,7 +13,6 @@ class _DiagnosingPageState extends State<DiagnosingPage> {
   final TextEditingController _patientSearchController = TextEditingController();
   final TextEditingController _symptomsController = TextEditingController();
   final TextEditingController _diagnosisController = TextEditingController();
-  final TextEditingController _medicationsController = TextEditingController();
 
   Map<String, dynamic> _selectedPatient = {};
   Map<String, String> _patients = {};
@@ -24,7 +24,7 @@ class _DiagnosingPageState extends State<DiagnosingPage> {
 
     try {
       final querySnapshot = await FirebaseFirestore.instance
-          .collection('patients') // Change to the correct collection name
+          .collection('patients')
           .where('fullName', isGreaterThanOrEqualTo: query)
           .where('fullName', isLessThanOrEqualTo: '$query\uf8ff')
           .get();
@@ -41,6 +41,7 @@ class _DiagnosingPageState extends State<DiagnosingPage> {
     }
   }
 
+  // Save diagnosis to Firestore
   Future<void> _saveDiagnosis() async {
     if (_selectedPatient.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -55,7 +56,6 @@ class _DiagnosingPageState extends State<DiagnosingPage> {
         'fullName': _selectedPatient['fullName'],
         'symptoms': _symptomsController.text.trim(),
         'diagnosis': _diagnosisController.text.trim(),
-        'medications': _medicationsController.text.trim(),
         'date': DateTime.now(),
       });
 
@@ -66,11 +66,16 @@ class _DiagnosingPageState extends State<DiagnosingPage> {
       // Clear input fields
       _symptomsController.clear();
       _diagnosisController.clear();
-      _medicationsController.clear();
       setState(() {
         _selectedPatient = {};
         _patientSearchController.clear();
       });
+
+      // Navigate to AddLabResultsPage
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AddLabResultsPage()),
+      );
     } catch (e) {
       print("Error saving diagnosis: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -155,15 +160,6 @@ class _DiagnosingPageState extends State<DiagnosingPage> {
               controller: _diagnosisController,
               decoration: const InputDecoration(
                 labelText: "Diagnosis",
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _medicationsController,
-              decoration: const InputDecoration(
-                labelText: "Prescribed Medications",
                 border: OutlineInputBorder(),
               ),
               maxLines: 2,

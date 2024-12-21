@@ -100,7 +100,7 @@ class _UpdateUserPageState extends State<UpdateUserPage> {
                   borderSide: BorderSide.none,
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                suffixIcon: Icon(Icons.search, color: Colors.blueAccent),
+                suffixIcon: const Icon(Icons.search, color: Colors.blueAccent),
               ),
             ),
             const SizedBox(height: 20),
@@ -131,12 +131,12 @@ class _UpdateUserPageState extends State<UpdateUserPage> {
               // Update Button
               ElevatedButton(
                 onPressed: _updateUser,
-                child: const Text("Update User"),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   textStyle: const TextStyle(fontSize: 18),
                   backgroundColor: Colors.blueAccent,
                 ),
+                child: const Text("Update User"),
               ),
             ] else ...[
               const Text("No user found, please search for a user."),

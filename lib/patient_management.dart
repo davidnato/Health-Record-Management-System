@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hrms/PatientDetailsPage.dart';
+import 'package:hrms/patient_details_cluster.dart';
 import 'package:hrms/register_patient.dart';
 import 'package:hrms/update_patient.dart';
 import 'package:hrms/view_patient_records.dart';
@@ -48,8 +49,22 @@ class PatientManagementPage extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ViewPatientRecordsPage()),
+                  MaterialPageRoute(builder: (context) => const ViewPatientRecordsPage(patientId: null,)),
                 );
+              },
+            ),
+            _buildListTile(
+              context,
+              title: "View Patient Records",
+              icon: Icons.visibility,
+              onTap: () {
+                Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PatientSummaryPage(patientId: 'somePatientId'),
+                ),
+              );
+
               },
             ),
           ],

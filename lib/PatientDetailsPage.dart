@@ -1,78 +1,119 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:hrms/view_patient_records.dart';
+import 'view_patient_records.dart';
 
-class ViewPatientRecordsPage extends StatelessWidget {
-  const ViewPatientRecordsPage({super.key});
+class ViewPatientRecordsPage extends StatefulWidget {
+  const ViewPatientRecordsPage({super.key, required patientId});
+
+  @override
+  _ViewPatientRecordsPageState createState() => _ViewPatientRecordsPageState();
+}
+
+class _ViewPatientRecordsPageState extends State<ViewPatientRecordsPage> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Patient Records"),
-        backgroundColor: Colors.blueAccent, // Custom AppBar color
+        backgroundColor: Colors.blueAccent,
         elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection('patients').snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text("Error: ${snapshot.error}"));
-            } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return const Center(child: Text("No patient records found."));
-            } else {
-              final patientDocs = snapshot.data!.docs;
+      body: Column(
+        children: [
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: "Search by name",
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.toLowerCase().trim();
+                });
+              },
+            ),
+          ),
+          // Patient Records
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('patients').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("Error: ${snapshot.error}"));
+                } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text("No patient records found."));
+                } else {
+                  final patientDocs = snapshot.data!.docs;
+                  
+                  // Filter patients by search query
+                  final filteredPatients = patientDocs.where((doc) {
+                    final patientData = doc.data() as Map<String, dynamic>;
+                    final fullName = (patientData['fullName'] ?? '').toString().toLowerCase();
+                    return fullName.contains(_searchQuery);
+                  }).toList();
 
-              return ListView.builder(
-                itemCount: patientDocs.length,
-                itemBuilder: (context, index) {
-                  final patientData = patientDocs[index].data() as Map<String, dynamic>;
+                  if (filteredPatients.isEmpty) {
+                    return const Center(child: Text("No matching patient records found."));
+                  }
 
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    elevation: 5, // Added shadow for card elevation
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15), // Rounded corners for card
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(16.0), // Padding inside the card
-                      title: Text(
-                        patientData['fullName'] ?? 'No Name',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  return ListView.builder(
+                    itemCount: filteredPatients.length,
+                    itemBuilder: (context, index) {
+                      final patientData = filteredPatients[index].data() as Map<String, dynamic>;
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
                         ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Phone: ${patientData['phone'] ?? 'N/A'}'),
-                          Text('Email: ${patientData['email'] ?? 'N/A'}'),
-                          Text('DOB: ${patientData['dob'] ?? 'N/A'}'),
-                        ],
-                      ),
-                      onTap: () {
-                        // Navigate to PatientDetailsPage and pass all patient details
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PatientDetailsPage(
-                              patientData: patientData,
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(16.0),
+                          title: Text(
+                            patientData['fullName'] ?? 'No Name',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        );
-                      },
-                    ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Phone: ${patientData['phone'] ?? 'N/A'}'),
+                              Text('Email: ${patientData['email'] ?? 'N/A'}'),
+                              Text('DOB: ${patientData['dob'] ?? 'N/A'}'),
+                            ],
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PatientDetailsPage(
+                                  patientData: patientData,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
                   );
-                },
-              );
-            }
-          },
-        ),
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

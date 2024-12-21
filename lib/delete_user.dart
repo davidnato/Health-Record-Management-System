@@ -92,7 +92,7 @@ class _DeleteUserPageState extends State<DeleteUserPage> {
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                     vertical: 16, horizontal: 20),
-                suffixIcon: Icon(Icons.search, color: Colors.blueAccent),
+                suffixIcon: const Icon(Icons.search, color: Colors.blueAccent),
               ),
             ),
             const SizedBox(height: 20),
